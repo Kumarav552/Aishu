@@ -1,442 +1,287 @@
-const loginScreen = document.getElementById("loginScreen");
-const appShell = document.getElementById("appShell");
-const loginForm = document.getElementById("loginForm");
-const loginEmail = document.getElementById("loginEmail");
-const loginPassword = document.getElementById("loginPassword");
-const loginStatus = document.getElementById("loginStatus");
-const togglePassword = document.getElementById("togglePassword");
-const profilePhotoInput = document.getElementById("profilePhotoInput");
-const topAvatarImage = document.getElementById("topAvatarImage");
-const profileAvatarImage = document.getElementById("profileAvatarImage");
-const changePhotoButton = document.getElementById("changePhotoButton");
-const profileNameText = document.getElementById("profileNameText");
-const profileNameInput = document.getElementById("profileNameInput");
-const saveNameButton = document.getElementById("saveNameButton");
-const profileStatus = document.getElementById("profileStatus");
-const topAvatarFallback = document.getElementById("topAvatarFallback");
-const profileAvatarFallback = document.getElementById("profileAvatarFallback");
-const avatarWrappers = [
-  document.querySelector(".avatar-upload"),
-  document.querySelector(".profile-upload")
-];
-const weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-const screens = document.querySelectorAll(".screen");
-const navButtons = document.querySelectorAll("[data-nav]");
-const bottomNavButtons = document.querySelectorAll(".nav-item");
-const calendarWeekdays = document.getElementById("calendarWeekdays");
-const calendarGrid = document.getElementById("calendarGrid");
-const calendarTitle = document.getElementById("calendarTitle");
-const selectedDateLabel = document.getElementById("selectedDateLabel");
-const savingsForm = document.getElementById("savingsForm");
-const amountInput = document.getElementById("amountInput");
-const timeInput = document.getElementById("timeInput");
-const noteInput = document.getElementById("noteInput");
-const saveStatus = document.getElementById("saveStatus");
-const totalSavings = document.getElementById("totalSavings");
-const monthSavings = document.getElementById("monthSavings");
-const historyTotal = document.getElementById("historyTotal");
-const profileTotal = document.getElementById("profileTotal");
-const profileMonth = document.getElementById("profileMonth");
-const historyMonth = document.getElementById("historyMonth");
-const historyListTitle = document.getElementById("historyListTitle");
-const historyList = document.getElementById("historyList");
-const monthLabel = document.getElementById("monthLabel");
-const progressFill = document.getElementById("progressFill");
-const goalFill = document.getElementById("goalFill");
-const progressValue = document.getElementById("progressValue");
-const progressText = document.getElementById("progressText");
-const prevMonthButton = document.getElementById("prevMonth");
-const nextMonthButton = document.getElementById("nextMonth");
-const fabButton = document.getElementById("fabButton");
-const filterButton = document.getElementById("filterButton");
-const clearTotalSavingsButton = document.getElementById("clearTotalSavings");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aishu Savings</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-stage">
+    <section class="phone-app">
+      <section class="login-screen active" id="loginScreen">
+        <div class="login-decor decor-a"></div>
+        <div class="login-decor decor-b"></div>
 
-const state = {
-  activeScreen: "home",
-  currentMonth: 3,
-  currentYear: 2026,
-  selectedDate: new Date(2026, 3, 24),
-  sortNewestFirst: true,
-  baseTotal: 0,
-  previousMonthSavings: 0,
-  goalTarget: 100000000,
-  profileName: "AISHU",
-  entries: [
-    { date: "2025-04-24", note: "Saved from pocket money", amount: 500, time: "09:30 AM" },
-    { date: "2025-04-22", note: "Gift money saved", amount: 300, time: "07:15 PM" },
-    { date: "2025-04-20", note: "Saved from allowance", amount: 200, time: "11:45 AM" },
-    { date: "2025-04-18", note: "Extra money saved", amount: 800, time: "04:20 PM" },
-    { date: "2025-04-15", note: "Part-time work", amount: 1000, time: "06:30 PM" },
-    { date: "2025-04-10", note: "Saved from pocket money", amount: 400, time: "08:10 AM" },
-    { date: "2025-04-05", note: "Gift money saved", amount: 750, time: "07:45 PM" },
-    { date: "2025-04-01", note: "Month started", amount: 2300, time: "09:00 AM" }
-  ]
-};
-
-weekdays.forEach((day) => {
-  const item = document.createElement("span");
-  item.textContent = day;
-  calendarWeekdays.appendChild(item);
-});
-
-function formatCurrency(value) {
-  return `\u20B9 ${value.toLocaleString("en-IN")}`;
-}
-
-function formatMonthYear(date) {
-  return date.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
-}
-
-function formatFullDate(date) {
-  return date.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric"
-  });
-}
-
-function formatInputTime(value) {
-  const [hoursText, minutes] = value.split(":");
-  const hours = Number(hoursText);
-  const suffix = hours >= 12 ? "PM" : "AM";
-  const normalizedHours = hours % 12 || 12;
-  return `${String(normalizedHours).padStart(2, "0")}:${minutes} ${suffix}`;
-}
-
-function getMonthEntries(year, month) {
-  return state.entries.filter((entry) => {
-    const date = new Date(`${entry.date}T00:00:00`);
-    return date.getFullYear() === year && date.getMonth() === month;
-  });
-}
-
-function setActiveScreen(screenName) {
-  state.activeScreen = screenName;
-
-  screens.forEach((screen) => {
-    screen.classList.toggle("active", screen.dataset.screen === screenName);
-  });
-
-  bottomNavButtons.forEach((button) => {
-    button.classList.toggle("active", button.dataset.nav === screenName);
-  });
-}
-
-function showApp() {
-  loginScreen.classList.remove("active");
-  appShell.classList.add("active");
-}
-
-function setProfilePhoto(src) {
-  topAvatarImage.src = src;
-  profileAvatarImage.src = src;
-  avatarWrappers.forEach((wrapper) => wrapper.classList.add("has-photo"));
-}
-
-function updateProfileName() {
-  const name = state.profileName.trim() || "Aarav";
-  const initial = name.charAt(0).toUpperCase();
-
-  profileNameText.textContent = name;
-  profileNameInput.value = name;
-  topAvatarFallback.textContent = initial;
-  profileAvatarFallback.textContent = initial;
-}
-
-function updateSummary() {
-  const currentMonthDate = new Date(state.currentYear, state.currentMonth, 1);
-  const monthEntries = getMonthEntries(state.currentYear, state.currentMonth);
-  const monthTotal = monthEntries.reduce((sum, entry) => sum + entry.amount, 0);
-  const total = state.baseTotal + state.entries.reduce((sum, entry) => sum + entry.amount, 0);
-  const progress = state.previousMonthSavings === 0
-    ? 100
-    : Math.round((monthTotal / state.previousMonthSavings) * 100);
-  const goalProgress = Math.min(Math.round((monthTotal / state.goalTarget) * 100), 100);
-
-  totalSavings.textContent = formatCurrency(total);
-  monthSavings.textContent = formatCurrency(monthTotal);
-  historyTotal.textContent = formatCurrency(monthTotal);
-  profileTotal.textContent = formatCurrency(total);
-  profileMonth.textContent = formatCurrency(monthTotal);
-  monthLabel.textContent = formatMonthYear(currentMonthDate);
-  historyMonth.textContent = formatMonthYear(currentMonthDate);
-  historyListTitle.textContent = formatMonthYear(currentMonthDate);
-  progressFill.style.width = `${Math.min(progress, 100)}%`;
-  progressValue.textContent = `${progress}%`;
-  progressText.textContent = `Good job! You've saved ${progress}% more than last month.`;
-  goalFill.style.width = `${goalProgress}%`;
-}
-
-function renderCalendar() {
-  calendarGrid.innerHTML = "";
-
-  const firstDay = new Date(state.currentYear, state.currentMonth, 1);
-  const startDay = firstDay.getDay();
-  const daysInMonth = new Date(state.currentYear, state.currentMonth + 1, 0).getDate();
-  const daysInPrevMonth = new Date(state.currentYear, state.currentMonth, 0).getDate();
-  const monthEntryDates = new Set(
-    getMonthEntries(state.currentYear, state.currentMonth).map((entry) => Number(entry.date.slice(-2)))
-  );
-
-  calendarTitle.textContent = formatMonthYear(firstDay);
-
-  for (let i = startDay - 1; i >= 0; i -= 1) {
-    const day = document.createElement("button");
-    day.type = "button";
-    day.className = "calendar-day muted";
-    day.textContent = String(daysInPrevMonth - i);
-    calendarGrid.appendChild(day);
-  }
-
-  for (let date = 1; date <= daysInMonth; date += 1) {
-    const day = document.createElement("button");
-    day.type = "button";
-    day.className = "calendar-day";
-    day.textContent = String(date);
-
-    const isSelected =
-      state.selectedDate.getFullYear() === state.currentYear &&
-      state.selectedDate.getMonth() === state.currentMonth &&
-      state.selectedDate.getDate() === date;
-
-    if (monthEntryDates.has(date)) {
-      day.classList.add("has-entry");
-    }
-
-    if (isSelected) {
-      day.classList.add("selected");
-    }
-
-    day.addEventListener("click", () => {
-      state.selectedDate = new Date(state.currentYear, state.currentMonth, date);
-      selectedDateLabel.textContent = formatFullDate(state.selectedDate);
-      renderCalendar();
-    });
-
-    calendarGrid.appendChild(day);
-  }
-
-  const totalCells = startDay + daysInMonth;
-  const nextPad = (7 - (totalCells % 7)) % 7;
-
-  for (let date = 1; date <= nextPad; date += 1) {
-    const day = document.createElement("button");
-    day.type = "button";
-    day.className = "calendar-day muted";
-    day.textContent = String(date);
-    calendarGrid.appendChild(day);
-  }
-}
-
-function renderHistory() {
-  const monthEntries = getMonthEntries(state.currentYear, state.currentMonth);
-  const sorted = [...monthEntries].sort((a, b) => {
-    const comparison = new Date(`${a.date}T00:00:00`) - new Date(`${b.date}T00:00:00`);
-    return state.sortNewestFirst ? -comparison : comparison;
-  });
-
-  historyList.innerHTML = "";
-
-  if (sorted.length === 0) {
-    historyList.innerHTML = '<p class="history-empty">No savings history for this month yet.</p>';
-    return;
-  }
-
-  sorted.forEach((entry) => {
-    const date = new Date(`${entry.date}T00:00:00`);
-    const card = document.createElement("article");
-    card.className = "history-item";
-    card.innerHTML = `
-      <div class="date-badge">
-        <strong>${String(date.getDate()).padStart(2, "0")}</strong>
-        <span>${date.toLocaleDateString("en-GB", { month: "short" })}</span>
-      </div>
-      <div class="history-copy">
-        <div class="history-topline">
-          <p>${entry.note}</p>
-          <button class="delete-entry" type="button" data-entry-id="${entry.date}|${entry.time}|${entry.amount}" aria-label="Delete history item">X</button>
+        <div class="login-brand">
+          <div class="piggy-mark" aria-hidden="true">
+            <span class="coin-drop">&#8377;</span>
+            <span class="pig-body"></span>
+          </div>
+          <h1> Aishu Smart Savings</h1>
+          <p>Thanks for choosing Aishu Smart Savings <span class="heart-mark">&#10084;</span></p>
+          <p class="login-subtitle">Let's grow together!</p>
         </div>
-        <div class="history-meta">
-          <span class="amount">${formatCurrency(entry.amount)}</span>
-          <time>${entry.time}</time>
+
+        <form class="login-card" id="loginForm">
+          <label class="login-field">
+            <span class="field-symbol">@</span>
+            <input type="email" id="loginEmail" placeholder="Email" required>
+          </label>
+
+          <label class="login-field">
+            <span class="field-symbol">&#8226;</span>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button class="toggle-visibility" id="togglePassword" type="button" aria-label="Show password">o</button>
+          </label>
+
+          <a class="forgot-link" href="#">Forgot Password?</a>
+
+          <button class="login-button" id="loginButton" type="submit">Sign In</button>
+
+          <div class="login-divider">
+            <span></span>
+            <strong>OR</strong>
+            <span></span>
+          </div>
+
+          <button class="google-login" id="googleLoginButton" type="button">Continue with Google</button>
+
+          <p class="signup-row">Don't have an account? <a href="#">Sign Up</a></p>
+          <p class="login-status" id="loginStatus" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="app-shell" id="appShell">
+      <div class="status-bar" aria-hidden="true">
+        <span>9:41</span>
+        <div class="status-icons">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
       </div>
-    `;
-    historyList.appendChild(card);
-  });
-}
 
-historyList.addEventListener("click", (event) => {
-  const deleteButton = event.target.closest(".delete-entry");
+      <section class="screen screen-home active" data-screen="home">
+        <header class="top-bar">
+          <div>
+            <h1 class="brand">SaveMate</h1>
+          </div>
+          <label class="avatar avatar-upload" for="profilePhotoInput" aria-label="Upload profile photo">
+            <img id="topAvatarImage" alt="Profile photo">
+            <span class="avatar-fallback" id="topAvatarFallback">A</span>
+          </label>
+        </header>
 
-  if (!deleteButton) {
-    return;
-  }
+        <article class="quote-card">
+          <span class="quote-mark left">&ldquo;</span>
+          <p>Save today, secure tomorrow. <span class="leaf-tag">leaf</span></p>
+          <span class="quote-mark right">&rdquo;</span>
+        </article>
 
-  const entryId = deleteButton.dataset.entryId;
+        <article class="hero-card">
+          <div>
+            <div class="card-title-row">
+              <p class="eyebrow">Total Savings</p>
+              <button class="card-delete-button" id="clearTotalSavings" type="button" aria-label="Clear total savings">X</button>
+            </div>
+            <h2 id="totalSavings">&#8377; 48,750</h2>
+            <p class="support-text">Keep going! You're doing great.</p>
+          </div>
+          <div class="wallet-art" aria-hidden="true"></div>
+        </article>
 
-  state.entries = state.entries.filter((entry) => `${entry.date}|${entry.time}|${entry.amount}` !== entryId);
+        <article class="month-card">
+          <div class="month-head">
+            <div>
+              <p class="eyebrow dark">This Month Savings</p>
+              <h3 id="monthSavings">&#8377; 6,250</h3>
+              <p class="month-label" id="monthLabel">April 2025</p>
+            </div>
+            <div class="chart-badge" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
 
-  updateSummary();
-  renderCalendar();
-  renderHistory();
-});
+          <div class="progress-row">
+            <div class="progress-track">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <strong id="progressValue">62%</strong>
+          </div>
 
-prevMonthButton.addEventListener("click", () => {
-  state.currentMonth -= 1;
+          <div class="note-card">
+            <span class="check-badge">&#10003;</span>
+            <p id="progressText">Good job! You've saved 62% more than last month.</p>
+          </div>
+        </article>
 
-  if (state.currentMonth < 0) {
-    state.currentMonth = 11;
-    state.currentYear -= 1;
-  }
+        <section class="section-block">
+          <h3 class="section-title">Quick Actions</h3>
+          <div class="action-grid">
+            <button class="action-card" data-nav="add">
+              <span class="action-icon solid">+</span>
+              <strong>Add Savings</strong>
+              <small>Add your daily savings</small>
+            </button>
+            <button class="action-card" data-nav="history">
+              <span class="action-icon outline">H</span>
+              <strong>History</strong>
+              <small>View your savings history</small>
+            </button>
+          </div>
+        </section>
 
-  renderCalendar();
-  updateSummary();
-  renderHistory();
-});
+        <button class="fab-button" id="fabButton" type="button" aria-label="Add savings">+</button>
+      </section>
 
-nextMonthButton.addEventListener("click", () => {
-  state.currentMonth += 1;
+      <section class="screen screen-add" data-screen="add">
+        <header class="screen-header green-header">
+          <button class="icon-button back-button" type="button" data-nav="home">&#8249;</button>
+          <h2>Select Date</h2>
+          <span class="spark-mark">*</span>
+        </header>
 
-  if (state.currentMonth > 11) {
-    state.currentMonth = 0;
-    state.currentYear += 1;
-  }
+        <section class="calendar-card">
+          <div class="calendar-top">
+            <button class="icon-button" id="prevMonth" type="button">&#8249;</button>
+            <h3 id="calendarTitle">April 2025</h3>
+            <button class="icon-button" id="nextMonth" type="button">&#8250;</button>
+          </div>
+          <div class="calendar-weekdays" id="calendarWeekdays"></div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+        </section>
 
-  renderCalendar();
-  updateSummary();
-  renderHistory();
-});
+        <section class="form-card">
+          <h3 class="section-title green">Add Savings</h3>
 
-savingsForm.addEventListener("submit", (event) => {
-  event.preventDefault();
+          <div class="selected-date-card">
+            <span class="mini-icon">Dt</span>
+            <div>
+              <label>Selected Date</label>
+              <p id="selectedDateLabel">24 April 2025</p>
+            </div>
+          </div>
 
-  const amount = Number(amountInput.value);
-  const savingTime = timeInput.value;
-  const note = noteInput.value.trim() || "New savings added";
+          <form id="savingsForm">
+            <label class="field-group">
+              <span>Amount</span>
+              <div class="input-row">
+                <span class="pill solid">&#8377;</span>
+                <input type="number" id="amountInput" min="1" step="1" value="500" required>
+              </div>
+            </label>
 
-  if (!amount || amount < 1 || !savingTime) {
-    saveStatus.textContent = "Please enter a valid amount.";
-    saveStatus.style.color = "#c74444";
-    return;
-  }
+            <label class="field-group">
+              <span>Saving Time</span>
+              <div class="input-row">
+                <span class="pill soft">T</span>
+                <input type="time" id="timeInput" value="09:30" required>
+              </div>
+            </label>
 
-  const selectedDate = new Date(state.selectedDate);
-  const dateKey = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
+            <label class="field-group">
+              <span>Note (Optional)</span>
+              <div class="input-row">
+                <span class="pill soft">N</span>
+                <input type="text" id="noteInput" value="Saved from pocket money" placeholder="Saved from pocket money">
+              </div>
+            </label>
 
-  state.entries.unshift({
-    date: dateKey,
-    note,
-    amount,
-    time: formatInputTime(savingTime)
-  });
+            <button class="primary-button" type="submit">&#10003; Save</button>
+          </form>
 
-  state.currentMonth = selectedDate.getMonth();
-  state.currentYear = selectedDate.getFullYear();
+          <p class="save-status" id="saveStatus" aria-live="polite"></p>
+        </section>
+      </section>
 
-  updateSummary();
-  renderCalendar();
-  renderHistory();
+      <section class="screen screen-history" data-screen="history">
+        <header class="screen-header">
+          <button class="icon-button back-dark" type="button" data-nav="home">&#8249;</button>
+          <h2>History</h2>
+          <button class="icon-button filter-button" id="filterButton" type="button" aria-label="Toggle sort">v</button>
+        </header>
 
-  saveStatus.textContent = `${formatCurrency(amount)} added for ${formatFullDate(selectedDate)} at ${formatInputTime(savingTime)}.`;
-  saveStatus.style.color = "#11824d";
-  amountInput.value = "0";
-  timeInput.value = "09:30";
-  noteInput.value = "AISHU SAVINGS";
-  setActiveScreen("history");
-});
+        <article class="history-summary">
+          <div>
+            <div class="month-nav">
+              <button class="icon-button" id="historyPrevMonth" type="button" aria-label="Previous month">&#8249;</button>
+              <p class="month-label light" id="historyMonth">April 2025</p>
+              <button class="icon-button" id="historyNextMonth" type="button" aria-label="Next month">&#8250;</button>
+            </div>
+            <p class="eyebrow">Total Savings</p>
+            <h3 id="historyTotal">&#8377; 6,250</h3>
+          </div>
+          <div class="bag-art" aria-hidden="true"></div>
+        </article>
 
-fabButton.addEventListener("click", () => {
-  setActiveScreen("add");
-  amountInput.focus();
-});
+        <section class="history-wrap">
+          <h3 class="section-title" id="historyListTitle">April 2025</h3>
+          <div class="history-list" id="historyList"></div>
+        </section>
+      </section>
 
-navButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    const target = button.dataset.nav;
+      <section class="screen screen-profile" data-screen="profile">
+        <header class="screen-header">
+          <button class="icon-button back-dark" type="button" data-nav="home">&#8249;</button>
+          <h2>Profile</h2>
+          <span class="profile-dot" aria-hidden="true"></span>
+        </header>
 
-    if (target === "history" || target === "home" || target === "profile" || target === "add") {
-      setActiveScreen(target);
-    }
-  });
-});
+        <section class="profile-card">
+          <label class="profile-avatar profile-upload" for="profilePhotoInput" aria-label="Upload profile photo">
+            <img id="profileAvatarImage" alt="Profile photo">
+            <span class="avatar-fallback large" id="profileAvatarFallback">A</span>
+          </label>
+          <h3 id="profileNameText">Aishu</h3>
+          <p>Saving a little every day for a better tomorrow.</p>
+          <div class="name-editor">
+            <input type="text" id="profileNameInput" value="Aarav" placeholder="Enter your name">
+            <button class="photo-button" id="saveNameButton" type="button">Save Name</button>
+          </div>
+          <button class="photo-button" id="changePhotoButton" type="button">Change Photo</button>
+          <button class="photo-button logout-button" id="logoutButton" type="button">Logout</button>
+          <p class="profile-status" id="profileStatus" aria-live="polite"></p>
+        </section>
 
-filterButton.addEventListener("click", () => {
-  state.sortNewestFirst = !state.sortNewestFirst;
-  renderHistory();
-});
+        <section class="profile-stats">
+          <article>
+            <span>Total Saved</span>
+            <strong id="profileTotal">&#8377; 48,750</strong>
+          </article>
+          <article>
+            <span>This Month</span>
+            <strong id="profileMonth">&#8377; 6,250</strong>
+          </article>
+        </section>
 
-clearTotalSavingsButton.addEventListener("click", () => {
-  state.baseTotal = 0;
-  state.entries = [];
-  saveStatus.textContent = "All savings data deleted.";
-  saveStatus.style.color = "#11824d";
-  updateSummary();
-  renderCalendar();
-  renderHistory();
-  setActiveScreen("home");
-});
+        <section class="profile-goals">
+          <h3 class="section-title">Goal Progress</h3>
+          <div class="goal-card">
+            <div class="goal-copy">
+              <strong>School Fund</strong>
+              <span>Target: &#8377; 10,000</span>
+            </div>
+            <div class="progress-track large">
+              <div class="progress-fill" id="goalFill"></div>
+            </div>
+          </div>
+        </section>
+      </section>
 
-changePhotoButton.addEventListener("click", () => {
-  profilePhotoInput.click();
-});
+      <nav class="bottom-nav">
+        <button class="nav-item active" type="button" data-nav="home">Home</button>
+        <button class="nav-item" type="button" data-nav="history">History</button>
+        <button class="nav-item" type="button" data-nav="profile">Profile</button>
+      </nav>
+      <input type="file" id="profilePhotoInput" accept="image/*" hidden>
+      </section>
+    </section>
+  </main>
 
-saveNameButton.addEventListener("click", () => {
-  const nextName = profileNameInput.value.trim();
+  <script src="script.js"></script>
+</body>
+</html>
 
-  if (!nextName) {
-    profileStatus.textContent = "Please enter a valid name.";
-    profileStatus.style.color = "#c74444";
-    return;
-  }
-
-  state.profileName = nextName;
-  updateProfileName();
-  profileStatus.textContent = "Profile name updated.";
-  profileStatus.style.color = "#11824d";
-});
-
-profilePhotoInput.addEventListener("change", () => {
-  const [file] = profilePhotoInput.files;
-
-  if (!file) {
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.addEventListener("load", () => {
-    setProfilePhoto(reader.result);
-  });
-  reader.readAsDataURL(file);
-});
-
-togglePassword.addEventListener("click", () => {
-  const reveal = loginPassword.type === "password";
-  loginPassword.type = reveal ? "text" : "password";
-  togglePassword.textContent = reveal ? "-" : "o";
-  togglePassword.setAttribute("aria-label", reveal ? "Hide password" : "Show password");
-});
-
-loginForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const email = loginEmail.value.trim();
-  const password = loginPassword.value.trim();
-
-  if (!email || !password) {
-    loginStatus.textContent = "Please enter email and password.";
-    loginStatus.style.color = "#c74444";
-    return;
-  }
-
-  loginStatus.textContent = "Sign in successful.";
-  loginStatus.style.color = "#11824d";
-  showApp();
-});
-
-selectedDateLabel.textContent = formatFullDate(state.selectedDate);
-renderCalendar();
-updateSummary();
-renderHistory();
-updateProfileName();
-setActiveScreen("home");
