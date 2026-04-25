@@ -60,7 +60,7 @@ const state = {
   baseTotal: 0,
   previousMonthSavings: 0,
   goalTarget: 100000000,
-  profileName: "Aarav",
+  profileName: "AISHU",
   entries: [
     { date: "2025-04-24", note: "Saved from pocket money", amount: 500, time: "09:30 AM" },
     { date: "2025-04-22", note: "Gift money saved", amount: 300, time: "07:15 PM" },
@@ -340,9 +340,9 @@ savingsForm.addEventListener("submit", (event) => {
 
   saveStatus.textContent = `${formatCurrency(amount)} added for ${formatFullDate(selectedDate)} at ${formatInputTime(savingTime)}.`;
   saveStatus.style.color = "#11824d";
-  amountInput.value = "500";
+  amountInput.value = "0";
   timeInput.value = "09:30";
-  noteInput.value = "Saved from pocket money";
+  noteInput.value = "AISHU SAVINGS";
   setActiveScreen("history");
 });
 
